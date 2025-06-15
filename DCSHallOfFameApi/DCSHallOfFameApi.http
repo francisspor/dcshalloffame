@@ -1,0 +1,75 @@
+@baseUrl = http://localhost:5232
+@apiVersion = v1
+
+### Test Firebase Connection
+GET {{baseUrl}}/api/{{apiVersion}}/Test/connection
+Accept: application/json
+
+### Create Test Member
+POST {{baseUrl}}/api/{{apiVersion}}/Test/test-member
+Accept: application/json
+
+### Get all Hall of Fame members
+GET {{baseUrl}}/api/{{apiVersion}}/HallOfFame
+Accept: application/json
+
+### Get members by category (Staff)
+GET {{baseUrl}}/api/{{apiVersion}}/HallOfFame/category/Staff
+Accept: application/json
+
+### Get members by category (Alumni)
+GET {{baseUrl}}/api/{{apiVersion}}/HallOfFame/category/Alumni
+Accept: application/json
+
+### Create a new Staff member
+POST {{baseUrl}}/api/{{apiVersion}}/HallOfFame
+Content-Type: application/json
+
+{
+    "name": "John Doe",
+    "category": "Staff",
+    "inductionYear": 2024,
+    "biography": "A distinguished teacher who served for 30 years.",
+    "imageUrl": "https://example.com/john-doe.jpg",
+    "achievements": [
+        "Teacher of the Year 2020",
+        "Developed innovative curriculum"
+    ]
+}
+
+### Create a new Alumni member
+POST {{baseUrl}}/api/{{apiVersion}}/HallOfFame
+Content-Type: application/json
+
+{
+    "name": "Jane Smith",
+    "category": "Alumni",
+    "inductionYear": 2024,
+    "graduationYear": 1995,
+    "biography": "Successful entrepreneur and community leader.",
+    "imageUrl": "https://example.com/jane-smith.jpg",
+    "achievements": [
+        "Founded successful tech company",
+        "Created scholarship program"
+    ]
+}
+
+### Update a member (replace {id} with actual ID)
+PUT {{baseUrl}}/api/{{apiVersion}}/HallOfFame/{id}
+Content-Type: application/json
+
+{
+    "name": "John Doe",
+    "category": "Staff",
+    "inductionYear": 2024,
+    "biography": "Updated biography with more details.",
+    "imageUrl": "https://example.com/john-doe.jpg",
+    "achievements": [
+        "Teacher of the Year 2020",
+        "Developed innovative curriculum",
+        "New achievement added"
+    ]
+}
+
+### Delete a member (replace {id} with actual ID)
+DELETE {{baseUrl}}/api/{{apiVersion}}/HallOfFame/{id}
