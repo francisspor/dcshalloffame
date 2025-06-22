@@ -33,8 +33,8 @@ export default function AdminLogin() {
       } else if (result?.ok) {
         router.push('/admin')
       }
-    } catch (error) {
-      setError('An error occurred during sign in. Please try again.')
+    } catch {
+      setError('Failed to sign in')
     } finally {
       setIsLoading(false)
     }

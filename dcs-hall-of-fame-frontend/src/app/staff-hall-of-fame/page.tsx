@@ -35,8 +35,11 @@ export default function StaffHallOfFame() {
               The Staff Hall of Fame recognizes the exceptional contributions of teachers,
               administrators, and staff members who have dedicated their careers to serving
               the students and community of Duanesburg Central School. These individuals
-              have left an indelible mark on the school's history and continue to inspire
+              have left an indelible mark on the school&apos;s history and continue to inspire
               future generations.
+            </p>
+            <p className="text-lg text-gray-600 mb-8">
+              Discover the exceptional staff members who&apos;ve made lasting contributions to our institution.
             </p>
           </div>
         </section>

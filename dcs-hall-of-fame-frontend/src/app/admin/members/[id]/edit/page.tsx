@@ -7,7 +7,7 @@ import AdminProtected from '@/components/AdminProtected'
 import MemberForm from '@/components/MemberForm'
 import DeleteConfirmationModal from '@/components/DeleteConfirmationModal'
 import SuccessNotification from '@/components/SuccessNotification'
-import { MemberCategory, HallOfFameMember } from '@/types/member'
+import { HallOfFameMember } from '@/types/member'
 import { apiService } from '@/services/api'
 import Link from 'next/link'
 
@@ -39,8 +39,8 @@ export default function EditMemberPage() {
         } else if (response.data) {
           setMember(response.data)
         }
-      } catch (err) {
-        setError('Failed to load member data')
+      } catch {
+        console.error('Failed to load member data')
       } finally {
         setLoading(false)
       }
@@ -68,8 +68,8 @@ export default function EditMemberPage() {
           router.push('/admin')
         }, 1500)
       }
-    } catch (err) {
-      setError('An unexpected error occurred')
+    } catch {
+      console.error('Failed to update member')
     } finally {
       setSaving(false)
     }
@@ -100,8 +100,8 @@ export default function EditMemberPage() {
           router.push('/admin')
         }, 1500)
       }
-    } catch (err) {
-      setError('An unexpected error occurred')
+    } catch {
+      console.error('Failed to delete member')
     } finally {
       setSaving(false)
       setShowDeleteModal(false)

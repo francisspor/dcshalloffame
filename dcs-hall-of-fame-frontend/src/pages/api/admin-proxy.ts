@@ -39,7 +39,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   console.log('JWT payload:', payload)
 
   // Prepare the proxied request
-  const { method, body, query, headers } = req
+  const { method, body } = req
   let endpoint = req.query.endpoint
   if (!endpoint || typeof endpoint !== 'string') {
     return res.status(400).json({ error: 'Missing endpoint query param' })

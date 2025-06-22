@@ -1,20 +1,17 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import AdminProtected from '@/components/AdminProtected'
 import MemberForm from '@/components/MemberForm'
 import SuccessNotification from '@/components/SuccessNotification'
-import { MemberCategory, HallOfFameMember } from '@/types/member'
 import { apiService } from '@/services/api'
 import Link from 'next/link'
 
 export default function AddMemberPage() {
   const { data: session } = useSession()
   const router = useRouter()
-  const searchParams = useSearchParams()
-  const defaultCategory = searchParams.get('category') === 'alumni' ? MemberCategory.Alumni : MemberCategory.Staff
 
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -38,8 +35,8 @@ export default function AddMemberPage() {
           router.push('/admin')
         }, 1500)
       }
-    } catch (err) {
-      setError('An unexpected error occurred')
+    } catch {
+      console.error('Failed to create member')
     } finally {
       setLoading(false)
     }

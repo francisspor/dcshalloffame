@@ -8,6 +8,6 @@ export function generateSlug(name: string): string {
     .replace(/^-+|-+$/g, '') // Remove leading/trailing hyphens
 }
 
-export function findMemberBySlug(members: any[], slug: string) {
+export function findMemberBySlug(members: { name: string }[], slug: string) {
   return members.find(member => generateSlug(member.name) === slug)
 }

@@ -14,7 +14,7 @@ const handler = NextAuth({
     })
   ],
   callbacks: {
-    async signIn({ user, account, profile }) {
+    async signIn({ user, account }) {
       console.log('SignIn callback triggered for:', user.email)
       console.log('Account access token exists:', !!account?.access_token)
 
@@ -74,15 +74,17 @@ const handler = NextAuth({
       console.log('Access denied for user:', user.email)
       return false // User is not in the group, deny sign in
     },
-    async jwt({ token, account, profile }) {
-      if (account) {
-        token.accessToken = account.access_token
+    jwt: async ({ token, user }) => {
+      if (user) {
+        token.role = user.role;
       }
-      return token
+      return token;
     },
-    async session({ session, token }) {
-      session.accessToken = token.accessToken
-      return session
+    session: async ({ session, token }) => {
+      if (token) {
+        session.user.role = token.role;
+      }
+      return session;
     }
   },
   pages: {

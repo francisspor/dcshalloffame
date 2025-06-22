@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { HallOfFameMember, MemberCategory } from '@/types/member'
 import { apiService } from '@/services/api'
 import { findMemberBySlug } from '@/utils/slug'
@@ -61,13 +61,7 @@ export function useMemberById(id: string) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-    if (id) {
-      fetchMember()
-    }
-  }, [id])
-
-  const fetchMember = async () => {
+  const fetchMember = useCallback(async () => {
     setLoading(true)
     setError(null)
 
@@ -80,7 +74,13 @@ export function useMemberById(id: string) {
     }
 
     setLoading(false)
-  }
+  }, [id])
+
+  useEffect(() => {
+    if (id) {
+      fetchMember()
+    }
+  }, [id, fetchMember])
 
   return {
     member,
@@ -95,13 +95,7 @@ export function useMemberBySlug(slug: string) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-    if (slug) {
-      fetchMember()
-    }
-  }, [slug])
-
-  const fetchMember = async () => {
+  const fetchMember = useCallback(async () => {
     setLoading(true)
     setError(null)
 
@@ -114,7 +108,13 @@ export function useMemberBySlug(slug: string) {
     }
 
     setLoading(false)
-  }
+  }, [slug])
+
+  useEffect(() => {
+    if (slug) {
+      fetchMember()
+    }
+  }, [slug, fetchMember])
 
   return {
     member,

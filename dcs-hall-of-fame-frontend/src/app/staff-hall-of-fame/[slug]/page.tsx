@@ -2,7 +2,6 @@
 
 import Link from 'next/link'
 import { useMemberBySlug } from '@/hooks/useMembers'
-import { MemberCategory } from '@/types/member'
 
 interface MemberPageProps {
   params: {

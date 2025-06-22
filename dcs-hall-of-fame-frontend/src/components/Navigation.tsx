@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useMembers } from '@/hooks/useMembers'
 import { MemberCategory } from '@/types/member'
 import { generateSlug } from '@/utils/slug'

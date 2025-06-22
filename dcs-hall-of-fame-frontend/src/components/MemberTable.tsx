@@ -18,11 +18,12 @@ export default function MemberTable({ members, category, loading, error }: Membe
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
 
   const filteredAndSortedMembers = useMemo(() => {
-    let filtered = members.filter(member =>
-      member.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      member.biography.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    const searchLower = searchTerm.toLowerCase();
+    const filtered = members.filter(member =>
+      member.name.toLowerCase().includes(searchLower) ||
+      member.biography.toLowerCase().includes(searchLower) ||
       member.achievements.some(achievement =>
-        achievement.toLowerCase().includes(searchTerm.toLowerCase())
+        achievement.toLowerCase().includes(searchLower)
       )
     )
 

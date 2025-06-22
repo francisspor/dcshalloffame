@@ -1,4 +1,4 @@
-import NextAuth from 'next-auth'
+// Remove unused NextAuth if not used
 
 declare module 'next-auth' {
   interface Session {
