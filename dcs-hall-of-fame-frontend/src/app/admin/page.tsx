@@ -3,9 +3,9 @@
 import { useState } from 'react'
 import { useSession, signOut } from 'next-auth/react'
 import AdminProtected from '@/components/AdminProtected'
+import MemberTable from '@/components/MemberTable'
 import { useMembers } from '@/hooks/useMembers'
 import { MemberCategory } from '@/types/member'
-import { generateSlug } from '@/utils/slug'
 import Link from 'next/link'
 
 export default function AdminDashboard() {
@@ -123,6 +123,55 @@ export default function AdminDashboard() {
                   </button>
                 </div>
               </div>
+
+              {/* Recent Members */}
+              <div className="bg-white rounded-lg shadow-md p-6">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">Recent Members</h3>
+                {loading ? (
+                  <div className="text-center py-8">
+                    <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                    <p className="mt-2 text-gray-600">Loading...</p>
+                  </div>
+                ) : error ? (
+                  <div className="text-red-600">Error loading recent members: {error}</div>
+                ) : members.length === 0 ? (
+                  <p className="text-gray-500 text-center py-8">No members found.</p>
+                ) : (
+                  <div className="space-y-3">
+                    {members
+                      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+                      .slice(0, 5)
+                      .map((member) => (
+                        <div key={member.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                          <div>
+                            <div className="font-medium text-gray-900">{member.name}</div>
+                            <div className="text-sm text-gray-500">
+                              {member.category === MemberCategory.Staff ? 'Staff' : 'Alumni'} •
+                              Inducted {member.inductionYear}
+                            </div>
+                          </div>
+                          <div className="flex space-x-2">
+                            <Link
+                              href={`/admin/members/${member.id}/edit`}
+                              className="text-blue-600 hover:text-blue-900 text-sm"
+                            >
+                              Edit
+                            </Link>
+                            <Link
+                              href={member.category === MemberCategory.Staff
+                                ? `/staff-hall-of-fame/${member.name.toLowerCase().replace(/\s+/g, '-')}`
+                                : `/alumni-hall-of-fame/${member.name.toLowerCase().replace(/\s+/g, '-')}`
+                              }
+                              className="text-green-600 hover:text-green-900 text-sm"
+                            >
+                              View
+                            </Link>
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
@@ -139,66 +188,12 @@ export default function AdminDashboard() {
                 </Link>
               </div>
 
-              {loading ? (
-                <div className="text-center py-12">
-                  <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                  <p className="mt-2 text-gray-600">Loading members...</p>
-                </div>
-              ) : error ? (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                  <p className="text-red-600">Error loading members: {error}</p>
-                </div>
-              ) : (
-                <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Name
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Induction Year
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Graduation Year
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Actions
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {staffMembers.map((member) => (
-                        <tr key={member.id} className="hover:bg-gray-50">
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm font-medium text-gray-900">{member.name}</div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {member.inductionYear}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {member.graduationYear || 'N/A'}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                            <Link
-                              href={`/admin/members/${member.id}/edit`}
-                              className="text-blue-600 hover:text-blue-900 mr-4"
-                            >
-                              Edit
-                            </Link>
-                            <Link
-                              href={`/staff-hall-of-fame/${generateSlug(member.name)}`}
-                              className="text-green-600 hover:text-green-900"
-                            >
-                              View
-                            </Link>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
+              <MemberTable
+                members={staffMembers}
+                category={MemberCategory.Staff}
+                loading={loading}
+                error={error}
+              />
             </div>
           )}
 
@@ -215,66 +210,12 @@ export default function AdminDashboard() {
                 </Link>
               </div>
 
-              {loading ? (
-                <div className="text-center py-12">
-                  <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                  <p className="mt-2 text-gray-600">Loading members...</p>
-                </div>
-              ) : error ? (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                  <p className="text-red-600">Error loading members: {error}</p>
-                </div>
-              ) : (
-                <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Name
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Graduation Year
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Induction Year
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Actions
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {alumniMembers.map((member) => (
-                        <tr key={member.id} className="hover:bg-gray-50">
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm font-medium text-gray-900">{member.name}</div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {member.graduationYear || 'N/A'}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {member.inductionYear}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                            <Link
-                              href={`/admin/members/${member.id}/edit`}
-                              className="text-blue-600 hover:text-blue-900 mr-4"
-                            >
-                              Edit
-                            </Link>
-                            <Link
-                              href={`/alumni-hall-of-fame/${generateSlug(member.name)}`}
-                              className="text-green-600 hover:text-green-900"
-                            >
-                              View
-                            </Link>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
+              <MemberTable
+                members={alumniMembers}
+                category={MemberCategory.Alumni}
+                loading={loading}
+                error={error}
+              />
             </div>
           )}
         </main>

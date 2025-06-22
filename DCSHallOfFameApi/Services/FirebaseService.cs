@@ -108,6 +108,7 @@ public class FirebaseService : IFirebaseService
 
     public async Task<string> CreateMemberAsync(HallOfFameMember member)
     {
+        // Ensure both timestamps are in UTC
         member.CreatedAt = DateTime.UtcNow;
         member.UpdatedAt = DateTime.UtcNow;
 
@@ -126,7 +127,15 @@ public class FirebaseService : IFirebaseService
 
     public async Task UpdateMemberAsync(string id, HallOfFameMember member)
     {
+        // Ensure CreatedAt is in UTC (preserve the original creation time)
+        if (member.CreatedAt.Kind != DateTimeKind.Utc)
+        {
+            member.CreatedAt = DateTime.SpecifyKind(member.CreatedAt, DateTimeKind.Utc);
+        }
+
+        // Set UpdatedAt to current UTC time
         member.UpdatedAt = DateTime.UtcNow;
+
         await _firestoreDb.Collection(CollectionName).Document(id).SetAsync(member);
 
         // Invalidate relevant caches

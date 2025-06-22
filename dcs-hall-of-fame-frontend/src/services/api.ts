@@ -18,6 +18,11 @@ class ApiService {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
 
+      // Handle empty responses (like HTTP 204 No Content)
+      if (response.status === 204 || response.headers.get('content-length') === '0') {
+        return { data: undefined as T }
+      }
+
       const data = await response.json()
       return { data }
     } catch (error) {
@@ -60,10 +65,16 @@ class ApiService {
 
   // Create new member
   async createMember(member: Omit<HallOfFameMember, 'id' | 'createdAt' | 'updatedAt'>): Promise<ApiResponse<string>> {
-    return this.request<string>('/halloffame', {
+    const response = await this.request<{ id: string }>('/halloffame', {
       method: 'POST',
       body: JSON.stringify(member),
     })
+
+    if (response.error) {
+      return { error: response.error }
+    }
+
+    return { data: response.data?.id || '' }
   }
 
   // Update member

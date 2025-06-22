@@ -69,12 +69,12 @@ public class HallOfFameController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult<string>> CreateMember(HallOfFameMember member)
+    public async Task<ActionResult<object>> CreateMember(HallOfFameMember member)
     {
         try
         {
             var id = await _firebaseService.CreateMemberAsync(member);
-            return CreatedAtAction(nameof(GetMemberById), new { id }, id);
+            return Ok(new { id });
         }
         catch (Exception ex)
         {
@@ -92,6 +92,15 @@ public class HallOfFameController : ControllerBase
             if (existingMember == null)
             {
                 return NotFound();
+            }
+
+            // Ensure the member ID is set correctly
+            member.Id = id;
+
+            // Ensure DateTime fields are properly handled
+            if (member.CreatedAt.Kind != DateTimeKind.Utc)
+            {
+                member.CreatedAt = DateTime.SpecifyKind(member.CreatedAt, DateTimeKind.Utc);
             }
 
             await _firebaseService.UpdateMemberAsync(id, member);
