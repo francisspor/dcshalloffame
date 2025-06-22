@@ -1,20 +1,46 @@
 import { HallOfFameMember, MemberCategory, ApiResponse } from '@/types/member'
 import { findMemberBySlug } from '@/utils/slug'
+import { getSession } from 'next-auth/react'
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5232/api/v1'
 
 class ApiService {
+  private async getAuthHeaders(): Promise<HeadersInit> {
+    const session = await getSession()
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+    }
+
+    // For now, skip JWT token generation to get basic functionality working
+    // TODO: Implement proper JWT authentication
+    if (session?.user?.email) {
+      console.log('User authenticated:', session.user.email)
+      // Add a simple header to indicate admin status
+      headers['X-Admin-User'] = session.user.email
+    }
+
+    return headers
+  }
+
   private async request<T>(endpoint: string, options?: RequestInit): Promise<ApiResponse<T>> {
     try {
+      const authHeaders = await this.getAuthHeaders()
+
       const response = await fetch(`${API_BASE_URL}${endpoint}`, {
         headers: {
-          'Content-Type': 'application/json',
+          ...authHeaders,
           ...options?.headers,
         },
         ...options,
       })
 
       if (!response.ok) {
+        if (response.status === 401) {
+          throw new Error('Unauthorized - Please log in as an admin')
+        }
+        if (response.status === 403) {
+          throw new Error('Forbidden - Admin access required')
+        }
         throw new Error(`HTTP error! status: ${response.status}`)
       }
 
@@ -27,7 +53,10 @@ class ApiService {
       return { data }
     } catch (error) {
       console.error('API request failed:', error)
-      return { error: error instanceof Error ? error.message : 'An unknown error occurred' }
+      if (error instanceof Error) {
+        return { error: error.message }
+      }
+      return { error: 'An unknown error occurred' }
     }
   }
 
