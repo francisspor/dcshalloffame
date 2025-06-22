@@ -9,11 +9,13 @@ namespace DCSHallOfFameApi.Controllers;
 public class HallOfFameController : ControllerBase
 {
     private readonly IFirebaseService _firebaseService;
+    private readonly ICacheService _cacheService;
     private readonly ILogger<HallOfFameController> _logger;
 
-    public HallOfFameController(IFirebaseService firebaseService, ILogger<HallOfFameController> logger)
+    public HallOfFameController(IFirebaseService firebaseService, ICacheService cacheService, ILogger<HallOfFameController> logger)
     {
         _firebaseService = firebaseService;
+        _cacheService = cacheService;
         _logger = logger;
     }
 
@@ -120,6 +122,55 @@ public class HallOfFameController : ControllerBase
         {
             _logger.LogError(ex, "Error deleting member with ID: {Id}", id);
             return StatusCode(500, "An error occurred while deleting the member");
+        }
+    }
+
+    // Cache management endpoints (for admin use)
+    [HttpPost("cache/clear")]
+    public async Task<IActionResult> ClearAllCaches()
+    {
+        try
+        {
+            await _cacheService.InvalidateAllMemberCachesAsync();
+            _logger.LogInformation("All caches cleared manually");
+            return Ok(new { message = "All caches cleared successfully" });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error clearing caches");
+            return StatusCode(500, "An error occurred while clearing caches");
+        }
+    }
+
+    [HttpPost("cache/clear/category/{category}")]
+    public async Task<IActionResult> ClearCategoryCache(MemberCategory category)
+    {
+        try
+        {
+            await _cacheService.InvalidateCategoryCacheAsync(category);
+            _logger.LogInformation("Category cache cleared manually for: {Category}", category);
+            return Ok(new { message = $"Category cache for {category} cleared successfully" });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error clearing category cache for: {Category}", category);
+            return StatusCode(500, "An error occurred while clearing category cache");
+        }
+    }
+
+    [HttpPost("cache/clear/member/{id}")]
+    public async Task<IActionResult> ClearMemberCache(string id)
+    {
+        try
+        {
+            await _cacheService.InvalidateMemberCacheAsync(id);
+            _logger.LogInformation("Member cache cleared manually for ID: {Id}", id);
+            return Ok(new { message = $"Member cache for {id} cleared successfully" });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error clearing member cache for ID: {Id}", id);
+            return StatusCode(500, "An error occurred while clearing member cache");
         }
     }
 }

@@ -7,8 +7,14 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// Add memory cache
+builder.Services.AddMemoryCache();
+
 // Configure Firebase service
 builder.Services.AddSingleton<IFirebaseService, FirebaseService>();
+
+// Configure cache service
+builder.Services.AddSingleton<ICacheService, CacheService>();
 
 // Configure CORS
 builder.Services.AddCors(options =>
