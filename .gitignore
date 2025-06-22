@@ -2,6 +2,7 @@
 **/firebase-credentials.json
 **/appsettings.json
 **/appsettings.Development.json
+**/appsettings.Production.json
 
 # .NET build output
 bin/
