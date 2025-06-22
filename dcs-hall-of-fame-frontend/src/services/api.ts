@@ -1,8 +1,17 @@
 import { HallOfFameMember, MemberCategory, ApiResponse } from '@/types/member'
 import { findMemberBySlug } from '@/utils/slug'
 import { getSession } from 'next-auth/react'
+import jwt from 'jsonwebtoken'
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5232/api/v1'
+
+// JWT secret key - should match the one in your API configuration
+const JWT_SECRET = process.env.NEXT_PUBLIC_JWT_SECRET || 'your-super-secret-jwt-key-change-this-in-production'
+
+// Helper to determine if a method is an admin action
+const isAdminMethod = (method?: string) => {
+  return method === 'POST' || method === 'PUT' || method === 'DELETE'
+}
 
 class ApiService {
   private async getAuthHeaders(): Promise<HeadersInit> {
@@ -11,28 +20,58 @@ class ApiService {
       'Content-Type': 'application/json',
     }
 
-    // For now, skip JWT token generation to get basic functionality working
-    // TODO: Implement proper JWT authentication
     if (session?.user?.email) {
-      console.log('User authenticated:', session.user.email)
-      // Add a simple header to indicate admin status
-      headers['X-Admin-User'] = session.user.email
+      try {
+        // Generate JWT token for API authentication
+        const payload = {
+          sub: session.user.email,
+          email: session.user.email,
+          role: 'admin',
+          iss: 'dcs-hall-of-fame',
+          aud: 'dcs-hall-of-fame-api',
+          iat: Math.floor(Date.now() / 1000),
+          exp: Math.floor(Date.now() / 1000) + (60 * 60) // 1 hour expiration
+        }
+
+        const jwtToken = jwt.sign(payload, JWT_SECRET)
+        headers['Authorization'] = `Bearer ${jwtToken}`
+        console.log('JWT token generated for:', session.user.email)
+      } catch (error) {
+        console.error('Failed to generate JWT token:', error)
+        // Continue without token for read operations
+      }
     }
 
     return headers
   }
 
+  // For GET requests, go directly to the .NET API
+  // For admin actions, go through the Next.js proxy
   private async request<T>(endpoint: string, options?: RequestInit): Promise<ApiResponse<T>> {
     try {
-      const authHeaders = await this.getAuthHeaders()
-
-      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-        headers: {
-          ...authHeaders,
-          ...options?.headers,
-        },
-        ...options,
-      })
+      const method = options?.method || 'GET'
+      let response: Response
+      if (isAdminMethod(method)) {
+        // Use Next.js API proxy for admin actions
+        const proxyUrl = `/api/admin-proxy?endpoint=${encodeURIComponent(endpoint.replace(/^\//, ''))}`
+        response = await fetch(proxyUrl, {
+          method,
+          headers: {
+            'Content-Type': 'application/json',
+            ...options?.headers,
+          },
+          body: method !== 'GET' && method !== 'HEAD' ? options?.body : undefined,
+        })
+      } else {
+        // Public GET requests go directly to the .NET API
+        response = await fetch(`${API_BASE_URL}${endpoint}`, {
+          headers: {
+            'Content-Type': 'application/json',
+            ...options?.headers,
+          },
+          ...options,
+        })
+      }
 
       if (!response.ok) {
         if (response.status === 401) {

@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using DCSHallOfFameApi.Models;
 using DCSHallOfFameApi.Services;
+using DCSHallOfFameApi.Attributes;
+using System.Security.Claims;
 
 namespace DCSHallOfFameApi.Controllers;
 
@@ -69,8 +71,19 @@ public class HallOfFameController : ControllerBase
     }
 
     [HttpPost]
+    [AdminOnly]
     public async Task<ActionResult<object>> CreateMember(HallOfFameMember member)
     {
+        // Debug: Log the user's claims
+        var user = User;
+        _logger.LogInformation("User authenticated: {IsAuthenticated}", user.Identity?.IsAuthenticated);
+        _logger.LogInformation("User name: {Name}", user.Identity?.Name);
+
+        foreach (var claim in user.Claims)
+        {
+            _logger.LogInformation("Claim: {Type} = {Value}", claim.Type, claim.Value);
+        }
+
         try
         {
             var id = await _firebaseService.CreateMemberAsync(member);
@@ -84,6 +97,7 @@ public class HallOfFameController : ControllerBase
     }
 
     [HttpPut("{id}")]
+    [AdminOnly]
     public async Task<IActionResult> UpdateMember(string id, HallOfFameMember member)
     {
         try
@@ -114,6 +128,7 @@ public class HallOfFameController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [AdminOnly]
     public async Task<IActionResult> DeleteMember(string id)
     {
         try
@@ -136,6 +151,7 @@ public class HallOfFameController : ControllerBase
 
     // Cache management endpoints (for admin use)
     [HttpPost("cache/clear")]
+    [AdminOnly]
     public async Task<IActionResult> ClearAllCaches()
     {
         try
@@ -152,6 +168,7 @@ public class HallOfFameController : ControllerBase
     }
 
     [HttpPost("cache/clear/category/{category}")]
+    [AdminOnly]
     public async Task<IActionResult> ClearCategoryCache(MemberCategory category)
     {
         try
@@ -168,6 +185,7 @@ public class HallOfFameController : ControllerBase
     }
 
     [HttpPost("cache/clear/member/{id}")]
+    [AdminOnly]
     public async Task<IActionResult> ClearMemberCache(string id)
     {
         try

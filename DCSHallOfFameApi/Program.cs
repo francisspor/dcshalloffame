@@ -19,8 +19,7 @@ builder.Services.AddSingleton<IFirebaseService, FirebaseService>();
 // Configure cache service
 builder.Services.AddSingleton<ICacheService, CacheService>();
 
-// Configure JWT Authentication - TEMPORARILY DISABLED
-/*
+// Configure JWT Authentication
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
 var secretKey = jwtSettings["SecretKey"] ?? throw new InvalidOperationException("JWT SecretKey is not configured");
 var key = Encoding.ASCII.GetBytes(secretKey);
@@ -44,16 +43,63 @@ builder.Services.AddAuthentication(options =>
         ValidAudience = "dcs-hall-of-fame-api",
         ClockSkew = TimeSpan.Zero
     };
+
+    // Add debugging for JWT events
+    options.Events = new JwtBearerEvents
+    {
+        OnTokenValidated = context =>
+        {
+            var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>();
+            logger.LogInformation("JWT Token validated successfully");
+            logger.LogInformation("User: {User}", context.Principal?.Identity?.Name);
+            foreach (var claim in context.Principal?.Claims ?? Enumerable.Empty<System.Security.Claims.Claim>())
+            {
+                logger.LogInformation("Claim: {Type} = {Value}", claim.Type, claim.Value);
+            }
+            return Task.CompletedTask;
+        },
+        OnAuthenticationFailed = context =>
+        {
+            var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>();
+            logger.LogError("JWT Authentication failed: {Error}", context.Exception.Message);
+            return Task.CompletedTask;
+        }
+    };
 });
 
 // Configure Authorization
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("AdminOnly", policy =>
+    {
         policy.RequireAuthenticatedUser()
-              .RequireClaim("role", "admin"));
+              .RequireClaim("http://schemas.microsoft.com/ws/2008/06/identity/claims/role", "admin");
+
+        // Add debugging to the policy
+        policy.RequireAssertion(context =>
+        {
+            var logger = context.Resource as ILogger<Program>;
+
+            if (logger != null)
+            {
+                logger.LogInformation("Checking AdminOnly policy");
+                logger.LogInformation("User authenticated: {IsAuthenticated}", context.User.Identity?.IsAuthenticated);
+                logger.LogInformation("User name: {Name}", context.User.Identity?.Name);
+
+                var hasRoleClaim = context.User.HasClaim(c => c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role" && c.Value == "admin");
+                logger.LogInformation("Has role claim 'admin': {HasRole}", hasRoleClaim);
+
+                foreach (var claim in context.User.Claims)
+                {
+                    logger.LogInformation("Policy check - Claim: {Type} = {Value}", claim.Type, claim.Value);
+                }
+            }
+
+            return context.User.Identity?.IsAuthenticated == true &&
+                   context.User.HasClaim(c => c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role" && c.Value == "admin");
+        });
+    });
 });
-*/
 
 // Configure CORS - More restrictive for production
 var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>()
@@ -81,8 +127,8 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseCors("AllowFrontend");
-// app.UseAuthentication(); // TEMPORARILY DISABLED
-// app.UseAuthorization(); // TEMPORARILY DISABLED
+app.UseAuthentication();
+app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
