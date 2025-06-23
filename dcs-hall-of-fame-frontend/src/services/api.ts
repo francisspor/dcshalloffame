@@ -60,7 +60,7 @@ class ApiService {
             'Content-Type': 'application/json',
             ...options?.headers,
           },
-          body: method !== 'GET' && method !== 'HEAD' ? options?.body : undefined,
+          body: isAdminMethod(method) ? options?.body : undefined,
         })
       } else {
         // Public GET requests go directly to the .NET API
@@ -128,7 +128,7 @@ class ApiService {
       return { error: 'Member not found' }
     }
 
-    return { data: member }
+    return { data: member as HallOfFameMember }
   }
 
   // Create new member

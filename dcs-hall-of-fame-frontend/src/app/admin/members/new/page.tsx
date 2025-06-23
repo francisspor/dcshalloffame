@@ -8,6 +8,7 @@ import MemberForm from '@/components/MemberForm'
 import SuccessNotification from '@/components/SuccessNotification'
 import { apiService } from '@/services/api'
 import Link from 'next/link'
+import { HallOfFameMember } from '@/types/member'
 
 export default function AddMemberPage() {
   const { data: session } = useSession()

@@ -13,7 +13,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   // Get session from NextAuth
   // If you have a custom authOptions, pass it to getServerSession
-  const session = await getServerSession(req, res)
+  const session = await getServerSession(req, res, {})
   console.log('Session:', session?.user?.email)
 
   if (!session || !session.user?.email) {

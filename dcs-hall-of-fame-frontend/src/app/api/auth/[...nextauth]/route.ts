@@ -1,4 +1,4 @@
-import NextAuth from 'next-auth'
+import NextAuth from 'next-auth/next'
 import GoogleProvider from 'next-auth/providers/google'
 
 const handler = NextAuth({
@@ -81,7 +81,7 @@ const handler = NextAuth({
       return token;
     },
     session: async ({ session, token }) => {
-      if (token) {
+      if (token && session.user) {
         session.user.role = token.role;
       }
       return session;

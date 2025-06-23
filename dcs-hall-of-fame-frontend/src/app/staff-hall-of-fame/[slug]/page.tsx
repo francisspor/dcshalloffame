@@ -1,35 +1,26 @@
-'use client'
-
 import Link from 'next/link'
-import { useMemberBySlug } from '@/hooks/useMembers'
+import { apiService } from '@/services/api'
 
 interface MemberPageProps {
-  params: {
+  params: Promise<{
     slug: string
-  }
+  }>
 }
 
-export default function StaffMemberPage({ params }: MemberPageProps) {
-  const { member, loading, error } = useMemberBySlug(params.slug)
+export default async function StaffMemberPage({ params }: MemberPageProps) {
+  const { slug } = await params
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
-          <p className="mt-4 text-gray-600 text-lg">Loading member information...</p>
-        </div>
-      </div>
-    )
-  }
+  // Fetch member data server-side
+  const result = await apiService.getMemberBySlug(slug)
+  const member = result.data
 
-  if (error || !member) {
+  if (!member) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="bg-red-50 border border-red-200 rounded-lg p-8 max-w-md">
             <p className="text-red-600 text-lg mb-4">
-              {error || 'Member not found'}
+              Member not found
             </p>
             <Link
               href="/staff-hall-of-fame"

@@ -192,7 +192,7 @@ export default function AdminDashboard() {
                 members={staffMembers}
                 category={MemberCategory.Staff}
                 loading={loading}
-                error={error}
+                error={error ?? undefined}
               />
             </div>
           )}
@@ -214,7 +214,7 @@ export default function AdminDashboard() {
                 members={alumniMembers}
                 category={MemberCategory.Alumni}
                 loading={loading}
-                error={error}
+                error={error ?? undefined}
               />
             </div>
           )}

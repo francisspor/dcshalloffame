@@ -15,7 +15,7 @@ export default function EditMemberPage() {
   const { data: session } = useSession()
   const router = useRouter()
   const params = useParams()
-  const memberId = params.id as string
+  const memberId = params?.id as string
 
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
