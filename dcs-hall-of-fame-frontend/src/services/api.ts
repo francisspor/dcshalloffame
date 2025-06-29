@@ -5,7 +5,8 @@ import jwt from 'jsonwebtoken'
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://dcs-hall-of-fame-api-213912099731.us-central1.run.app/api/v1'
 
-console.log('API_BASE_URL:', API_BASE_URL);
+console.log('🔧 API_BASE_URL:', API_BASE_URL);
+console.log('🔧 Environment variable NEXT_PUBLIC_API_URL:', process.env.NEXT_PUBLIC_API_URL);
 
 // JWT secret key - should match the one in your API configuration
 const JWT_SECRET = process.env.NEXT_PUBLIC_JWT_SECRET || 'your-super-secret-jwt-key-change-this-in-production'
