@@ -42,7 +42,10 @@ builder.Services.AddAuthentication(options =>
         ValidIssuer = "dcs-hall-of-fame",
         ValidateAudience = true,
         ValidAudience = "dcs-hall-of-fame-api",
-        ClockSkew = TimeSpan.Zero
+        ClockSkew = TimeSpan.Zero,
+        RequireSignedTokens = true,
+        ValidateLifetime = true,
+        RequireExpirationTime = true
     };
 
     // Configure to not require authentication by default

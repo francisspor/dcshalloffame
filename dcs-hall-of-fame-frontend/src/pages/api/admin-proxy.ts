@@ -46,7 +46,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     console.log('🔍 JWT secret length:', JWT_SECRET?.length || 0)
     console.log('🔍 JWT secret starts with:', JWT_SECRET?.substring(0, 10) + '...')
 
-    const token = jwt.sign(payload, JWT_SECRET)
+    const token = jwt.sign(payload, JWT_SECRET, {
+      algorithm: 'HS256',
+      header: {
+        typ: 'JWT',
+        alg: 'HS256'
+      }
+    })
     console.log('✅ JWT generated:', token.substring(0, 50) + '...')
 
     // Decode the token to verify it was created correctly

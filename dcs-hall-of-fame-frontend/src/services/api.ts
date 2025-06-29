@@ -36,7 +36,13 @@ class ApiService {
           exp: Math.floor(Date.now() / 1000) + (60 * 60) // 1 hour expiration
         }
 
-        const jwtToken = jwt.sign(payload, JWT_SECRET)
+        const jwtToken = jwt.sign(payload, JWT_SECRET, {
+          algorithm: 'HS256',
+          header: {
+            typ: 'JWT',
+            alg: 'HS256'
+          }
+        })
         headers['Authorization'] = `Bearer ${jwtToken}`
         console.log('JWT token generated for:', session.user.email)
       } catch (error) {
