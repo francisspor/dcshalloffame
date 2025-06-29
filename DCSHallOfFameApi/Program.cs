@@ -141,29 +141,32 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseRouting();
-app.UseCors("AllowFrontend");
-app.UseAuthentication();
-app.UseAuthorization();
-app.UseHttpsRedirection();
 
 // Explicitly handle OPTIONS requests for CORS as a fallback
 app.Use(async (context, next) =>
 {
+    var origin = context.Request.Headers["Origin"].ToString();
+    if (!string.IsNullOrEmpty(origin))
+    {
+        context.Response.Headers.Add("Access-Control-Allow-Origin", origin);
+        context.Response.Headers.Add("Vary", "Origin");
+        context.Response.Headers.Add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+        context.Response.Headers.Add("Access-Control-Allow-Headers", "Content-Type, Authorization");
+    }
+
     if (context.Request.Method == "OPTIONS")
     {
-        var origin = context.Request.Headers.Origin.ToString();
-        if (allowedOrigins.Any(allowed => origin.StartsWith(allowed) || allowed.StartsWith("*")))
-        {
-            context.Response.Headers.Add("Access-Control-Allow-Origin", origin);
-            context.Response.Headers.Add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-            context.Response.Headers.Add("Access-Control-Allow-Headers", "Content-Type, Authorization");
-            context.Response.StatusCode = 204;
-            await context.Response.CompleteAsync();
-            return;
-        }
+        context.Response.StatusCode = 204;
+        await context.Response.CompleteAsync();
+        return;
     }
     await next();
 });
+
+app.UseCors("AllowFrontend");
+app.UseAuthentication();
+app.UseAuthorization();
+app.UseHttpsRedirection();
 
 app.UseEndpoints(endpoints =>
 {

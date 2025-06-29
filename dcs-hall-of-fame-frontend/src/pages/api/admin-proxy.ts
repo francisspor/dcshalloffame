@@ -28,7 +28,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const payload = {
     sub: session.user.email,
     email: session.user.email,
-    role: 'admin',
+    "http://schemas.microsoft.com/ws/2008/06/identity/claims/role": 'admin',
     iss: 'dcs-hall-of-fame',
     aud: 'dcs-hall-of-fame-api',
     iat: Math.floor(Date.now() / 1000),
