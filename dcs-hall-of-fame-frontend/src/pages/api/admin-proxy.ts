@@ -1,6 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { getServerSession } from 'next-auth/next'
-import jwt from 'jsonwebtoken'
 import { authOptions } from '@/lib/auth'
 
 // Import your NextAuth config if needed
@@ -8,6 +7,12 @@ import { authOptions } from '@/lib/auth'
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5232/api/v1'
 const JWT_SECRET = process.env.NEXT_PUBLIC_JWT_SECRET || 'your-super-secret-jwt-key-here-make-it-long-and-random-in-production'
+
+console.log('🔧 Environment check:')
+console.log('🔧 NEXT_PUBLIC_JWT_SECRET length:', process.env.NEXT_PUBLIC_JWT_SECRET?.length || 0)
+console.log('🔧 NEXT_PUBLIC_JWT_SECRET starts with:', process.env.NEXT_PUBLIC_JWT_SECRET?.substring(0, 10) + '...')
+console.log('🔧 JWT_SECRET length:', JWT_SECRET?.length || 0)
+console.log('🔧 JWT_SECRET starts with:', JWT_SECRET?.substring(0, 10) + '...')
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   console.log('🔍 Admin proxy called:', req.method, req.query.endpoint)
@@ -29,39 +34,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(401).json({ error: 'Unauthorized: No session' })
     }
 
-    console.log('✅ Session validated, generating JWT...')
-
-    // Generate JWT
-    const payload = {
-      sub: session.user.email,
-      email: session.user.email,
-      "http://schemas.microsoft.com/ws/2008/06/identity/claims/role": 'admin',
-      iss: 'dcs-hall-of-fame',
-      aud: 'dcs-hall-of-fame-api',
-      iat: Math.floor(Date.now() / 1000),
-      exp: Math.floor(Date.now() / 1000) + (60 * 60), // 1 hour
-    }
-
-    console.log('🔍 JWT payload:', JSON.stringify(payload, null, 2))
-    console.log('🔍 JWT secret length:', JWT_SECRET?.length || 0)
-    console.log('🔍 JWT secret starts with:', JWT_SECRET?.substring(0, 10) + '...')
-
-    const token = jwt.sign(payload, JWT_SECRET, {
-      algorithm: 'HS256',
-      header: {
-        typ: 'JWT',
-        alg: 'HS256'
-      }
-    })
-    console.log('✅ JWT generated:', token.substring(0, 50) + '...')
-
-    // Decode the token to verify it was created correctly
-    try {
-      const decoded = jwt.verify(token, JWT_SECRET)
-      console.log('🔍 JWT decoded successfully:', JSON.stringify(decoded, null, 2))
-    } catch (decodeError) {
-      console.error('❌ JWT decode error:', decodeError)
-    }
+    console.log('✅ Session validated, forwarding request...')
 
     // Prepare the proxied request
     const { method, body } = req
@@ -76,14 +49,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     console.log('🔍 Proxying to:', url)
     console.log('🔍 Request method:', method)
     console.log('🔍 Request body:', body)
-    console.log('🔍 Authorization header being sent:', `Bearer ${token.substring(0, 20)}...`)
+    console.log('🔍 User email:', session.user.email)
 
-    // Forward the request
+    // Forward the request with user info in headers
     const apiRes = await fetch(url, {
       method,
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
+        'X-User-Email': session.user.email,
+        'X-User-Role': 'admin',
       },
       body: method !== 'GET' && method !== 'HEAD' ? JSON.stringify(body) : undefined,
     })

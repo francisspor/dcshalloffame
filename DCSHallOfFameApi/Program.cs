@@ -24,90 +24,14 @@ var jwtSettings = builder.Configuration.GetSection("JwtSettings");
 var secretKey = jwtSettings["SecretKey"] ?? throw new InvalidOperationException("JWT SecretKey is not configured");
 var key = Encoding.ASCII.GetBytes(secretKey);
 
-builder.Services.AddAuthentication(options =>
-{
-    options.DefaultAuthenticateScheme = null;
-    options.DefaultChallengeScheme = null;
-    options.DefaultScheme = null;
-})
-.AddJwtBearer(options =>
-{
-    options.RequireHttpsMetadata = false; // Set to true in production
-    options.SaveToken = true;
-    options.TokenValidationParameters = new TokenValidationParameters
-    {
-        ValidateIssuerSigningKey = true,
-        IssuerSigningKey = new SymmetricSecurityKey(key),
-        ValidateIssuer = true,
-        ValidIssuer = "dcs-hall-of-fame",
-        ValidateAudience = true,
-        ValidAudience = "dcs-hall-of-fame-api",
-        ClockSkew = TimeSpan.Zero,
-        RequireSignedTokens = true,
-        ValidateLifetime = true,
-        RequireExpirationTime = true
-    };
+// Debug logging for JWT secret
+var logger = builder.Services.BuildServiceProvider().GetRequiredService<ILogger<Program>>();
+logger.LogInformation("=== JWT Configuration ===");
+logger.LogInformation("SecretKey length: {Length}", secretKey?.Length ?? 0);
+logger.LogInformation("SecretKey starts with: {Start}", secretKey?.Substring(0, Math.Min(10, secretKey?.Length ?? 0)) + "...");
+logger.LogInformation("Key length: {KeyLength}", key?.Length ?? 0);
 
-    // Configure to not require authentication by default
-    options.Events = new JwtBearerEvents
-    {
-        OnTokenValidated = context =>
-        {
-            var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>();
-            logger.LogInformation("=== JWT Token validated successfully ===");
-            logger.LogInformation("User: {User}", context.Principal?.Identity?.Name);
-            logger.LogInformation("IsAuthenticated: {IsAuthenticated}", context.Principal?.Identity?.IsAuthenticated);
-            logger.LogInformation("AuthenticationType: {AuthType}", context.Principal?.Identity?.AuthenticationType);
-
-            logger.LogInformation("=== All Claims ===");
-            foreach (var claim in context.Principal?.Claims ?? Enumerable.Empty<System.Security.Claims.Claim>())
-            {
-                logger.LogInformation("Claim: {Type} = {Value}", claim.Type, claim.Value);
-            }
-
-            logger.LogInformation("=== Role Claims ===");
-            var roleClaims = context.Principal?.Claims.Where(c => c.Type.Contains("role")).ToList();
-            foreach (var claim in roleClaims ?? Enumerable.Empty<System.Security.Claims.Claim>())
-            {
-                logger.LogInformation("Role Claim: {Type} = {Value}", claim.Type, claim.Value);
-            }
-
-            return Task.CompletedTask;
-        },
-        OnAuthenticationFailed = context =>
-        {
-            var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>();
-            logger.LogError("=== JWT Authentication failed ===");
-            logger.LogError("Error: {Error}", context.Exception.Message);
-            logger.LogError("Exception type: {ExceptionType}", context.Exception.GetType().Name);
-            logger.LogError("Stack trace: {StackTrace}", context.Exception.StackTrace);
-            return Task.CompletedTask;
-        },
-        OnChallenge = context =>
-        {
-            var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>();
-            logger.LogWarning("=== JWT Challenge triggered ===");
-            logger.LogWarning("Request path: {Path}", context.Request.Path);
-            logger.LogWarning("Authorization header present: {HasAuth}", !string.IsNullOrEmpty(context.Request.Headers.Authorization));
-
-            // Skip the challenge for requests without authorization header
-            if (string.IsNullOrEmpty(context.Request.Headers.Authorization))
-            {
-                logger.LogInformation("Skipping challenge - no authorization header");
-                context.HandleResponse();
-            }
-            return Task.CompletedTask;
-        },
-        OnMessageReceived = context =>
-        {
-            var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>();
-            logger.LogInformation("=== JWT Message received ===");
-            logger.LogInformation("Request path: {Path}", context.Request.Path);
-            logger.LogInformation("Authorization header: {AuthHeader}", context.Request.Headers.Authorization);
-            return Task.CompletedTask;
-        }
-    };
-});
+// Note: JWT authentication disabled - using custom header-based authentication
 
 // Configure Authorization
 builder.Services.AddAuthorization(options =>
@@ -196,9 +120,37 @@ app.Use(async (context, next) =>
 });
 
 app.UseCors("AllowFrontend");
-app.UseAuthentication();
-app.UseAuthorization();
+// app.UseAuthentication(); // Disabled - using custom authentication
+// app.UseAuthorization(); // Disabled - using custom authentication
 app.UseHttpsRedirection();
+
+// Simple authentication middleware for admin requests
+app.Use(async (context, next) =>
+{
+    var userEmail = context.Request.Headers["X-User-Email"].ToString();
+    var userRole = context.Request.Headers["X-User-Role"].ToString();
+
+    if (!string.IsNullOrEmpty(userEmail) && userRole == "admin")
+    {
+        // Create a simple claims principal for admin users
+        var claims = new List<System.Security.Claims.Claim>
+        {
+            new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.Name, userEmail),
+            new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.Email, userEmail),
+            new System.Security.Claims.Claim("http://schemas.microsoft.com/ws/2008/06/identity/claims/role", "admin")
+        };
+
+        var identity = new System.Security.Claims.ClaimsIdentity(claims, "Custom");
+        context.User = new System.Security.Claims.ClaimsPrincipal(identity);
+
+        var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
+        logger.LogInformation("=== Custom Authentication ===");
+        logger.LogInformation("User authenticated: {User}", userEmail);
+        logger.LogInformation("Role: {Role}", userRole);
+    }
+
+    await next();
+});
 
 app.UseEndpoints(endpoints =>
 {
