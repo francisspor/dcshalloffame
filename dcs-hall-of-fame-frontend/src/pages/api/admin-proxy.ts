@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { getServerSession } from 'next-auth/next'
 import jwt from 'jsonwebtoken'
-import { authOptions } from '../../app/api/auth/[...nextauth]/route'
+import { authOptions } from '@/lib/auth'
 
 // Import your NextAuth config if needed
 // import { authOptions } from '../auth/[...nextauth]'
