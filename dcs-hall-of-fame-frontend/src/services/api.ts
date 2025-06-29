@@ -3,7 +3,7 @@ import { findMemberBySlug } from '@/utils/slug'
 import { getSession } from 'next-auth/react'
 import jwt from 'jsonwebtoken'
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5232/api/v1'
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://dcs-hall-of-fame-api-213912099731.us-central1.run.app/api/v1'
 
 console.log('API_BASE_URL:', API_BASE_URL);
 
