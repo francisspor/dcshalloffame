@@ -45,7 +45,7 @@ gcloud run deploy $ServiceName `
   --memory 512Mi `
   --cpu 1 `
   --max-instances 10 `
-  --set-env-vars ASPNETCORE_ENVIRONMENT=Production, AllowedOrigins__0=https://dcshalloffame.vercel.app, AllowedOrigins__1=http://localhost:3000, AllowedOrigins__2=https://localhost:3000
+  --set-env-vars ASPNETCORE_ENVIRONMENT=Production, AllowedOrigins__0=https://dcshalloffame.vercel.app, AllowedOrigins__1=http://localhost:3000, AllowedOrigins__2=https://localhost:3000, JwtSettings__SecretKey=your-super-secret-jwt-key-change-this-in-production
 
 if ($LASTEXITCODE -ne 0) {
   Write-Host "❌ Cloud Run deployment failed!" -ForegroundColor Red

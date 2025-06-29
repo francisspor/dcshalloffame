@@ -1,11 +1,13 @@
 using Microsoft.AspNetCore.Mvc;
 using DCSHallOfFameApi.Services;
 using DCSHallOfFameApi.Models;
+using Microsoft.AspNetCore.Cors;
 
 namespace DCSHallOfFameApi.Controllers;
 
 [ApiController]
 [Route("api/v1/[controller]")]
+[EnableCors("AllowFrontend")]
 public class TestController : ControllerBase
 {
     private readonly IFirebaseService _firebaseService;

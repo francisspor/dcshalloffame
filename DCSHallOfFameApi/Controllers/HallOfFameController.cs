@@ -3,11 +3,13 @@ using DCSHallOfFameApi.Models;
 using DCSHallOfFameApi.Services;
 using DCSHallOfFameApi.Attributes;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Cors;
 
 namespace DCSHallOfFameApi.Controllers;
 
 [ApiController]
 [Route("api/v1/[controller]")]
+[EnableCors("AllowFrontend")]
 public class HallOfFameController : ControllerBase
 {
     private readonly IFirebaseService _firebaseService;

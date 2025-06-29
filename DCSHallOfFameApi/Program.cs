@@ -26,8 +26,9 @@ var key = Encoding.ASCII.GetBytes(secretKey);
 
 builder.Services.AddAuthentication(options =>
 {
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultAuthenticateScheme = null;
+    options.DefaultChallengeScheme = null;
+    options.DefaultScheme = null;
 })
 .AddJwtBearer(options =>
 {
@@ -44,7 +45,7 @@ builder.Services.AddAuthentication(options =>
         ClockSkew = TimeSpan.Zero
     };
 
-    // Add debugging for JWT events
+    // Configure to not require authentication by default
     options.Events = new JwtBearerEvents
     {
         OnTokenValidated = context =>
@@ -62,6 +63,15 @@ builder.Services.AddAuthentication(options =>
         {
             var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>();
             logger.LogError("JWT Authentication failed: {Error}", context.Exception.Message);
+            return Task.CompletedTask;
+        },
+        OnChallenge = context =>
+        {
+            // Skip the challenge for requests without authorization header
+            if (string.IsNullOrEmpty(context.Request.Headers.Authorization))
+            {
+                context.HandleResponse();
+            }
             return Task.CompletedTask;
         }
     };
@@ -113,26 +123,51 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policyBuilder =>
     {
-        policyBuilder.WithOrigins(allowedOrigins)
-               .AllowAnyMethod()
-               .AllowAnyHeader()
-               .AllowCredentials();
+        policyBuilder
+            .WithOrigins(allowedOrigins)
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .SetIsOriginAllowedToAllowWildcardSubdomains()
+            .WithExposedHeaders("Content-Disposition");
     });
 });
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+app.UseRouting();
 app.UseCors("AllowFrontend");
 app.UseAuthentication();
 app.UseAuthorization();
-app.MapControllers();
+app.UseHttpsRedirection();
+
+// Explicitly handle OPTIONS requests for CORS as a fallback
+app.Use(async (context, next) =>
+{
+    if (context.Request.Method == "OPTIONS")
+    {
+        var origin = context.Request.Headers.Origin.ToString();
+        if (allowedOrigins.Any(allowed => origin.StartsWith(allowed) || allowed.StartsWith("*")))
+        {
+            context.Response.Headers.Add("Access-Control-Allow-Origin", origin);
+            context.Response.Headers.Add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+            context.Response.Headers.Add("Access-Control-Allow-Headers", "Content-Type, Authorization");
+            context.Response.StatusCode = 204;
+            await context.Response.CompleteAsync();
+            return;
+        }
+    }
+    await next();
+});
+
+app.UseEndpoints(endpoints =>
+{
+    endpoints.MapControllers();
+});
 
 app.Run();
