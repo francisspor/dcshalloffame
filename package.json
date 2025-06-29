@@ -1,0 +1,13 @@
+{
+  "devDependencies": {
+    "husky": "^8.0.0",
+    "lint-staged": "^16.1.2"
+  },
+  "scripts": {
+    "prepare": "husky install",
+    "lint:frontend": "cd dcs-hall-of-fame-frontend && npx eslint --fix"
+  },
+  "lint-staged": {
+    "dcs-hall-of-fame-frontend/**/*.{js,jsx,ts,tsx}": "npm run lint:frontend"
+  }
+}

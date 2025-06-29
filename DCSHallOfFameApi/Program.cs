@@ -103,7 +103,11 @@ builder.Services.AddAuthorization(options =>
 
 // Configure CORS - More restrictive for production
 var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>()
-    ?? new[] { "http://localhost:3000", "https://localhost:3000" };
+    ?? new[] {
+        "http://localhost:3000",
+        "https://localhost:3000",
+        "https://dcshalloffame.vercel.app"
+    };
 
 builder.Services.AddCors(options =>
 {
