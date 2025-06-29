@@ -68,11 +68,12 @@ class ApiService {
       } else {
         // Public GET requests go directly to the .NET API
         response = await fetch(`${API_BASE_URL}${endpoint}`, {
+          method: 'GET',
+          mode: 'cors',
+          credentials: 'omit',
           headers: {
             'Content-Type': 'application/json',
-            ...options?.headers,
           },
-          ...options,
         })
       }
 
