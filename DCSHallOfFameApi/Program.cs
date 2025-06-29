@@ -51,27 +51,56 @@ builder.Services.AddAuthentication(options =>
         OnTokenValidated = context =>
         {
             var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>();
-            logger.LogInformation("JWT Token validated successfully");
+            logger.LogInformation("=== JWT Token validated successfully ===");
             logger.LogInformation("User: {User}", context.Principal?.Identity?.Name);
+            logger.LogInformation("IsAuthenticated: {IsAuthenticated}", context.Principal?.Identity?.IsAuthenticated);
+            logger.LogInformation("AuthenticationType: {AuthType}", context.Principal?.Identity?.AuthenticationType);
+
+            logger.LogInformation("=== All Claims ===");
             foreach (var claim in context.Principal?.Claims ?? Enumerable.Empty<System.Security.Claims.Claim>())
             {
                 logger.LogInformation("Claim: {Type} = {Value}", claim.Type, claim.Value);
             }
+
+            logger.LogInformation("=== Role Claims ===");
+            var roleClaims = context.Principal?.Claims.Where(c => c.Type.Contains("role")).ToList();
+            foreach (var claim in roleClaims ?? Enumerable.Empty<System.Security.Claims.Claim>())
+            {
+                logger.LogInformation("Role Claim: {Type} = {Value}", claim.Type, claim.Value);
+            }
+
             return Task.CompletedTask;
         },
         OnAuthenticationFailed = context =>
         {
             var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>();
-            logger.LogError("JWT Authentication failed: {Error}", context.Exception.Message);
+            logger.LogError("=== JWT Authentication failed ===");
+            logger.LogError("Error: {Error}", context.Exception.Message);
+            logger.LogError("Exception type: {ExceptionType}", context.Exception.GetType().Name);
+            logger.LogError("Stack trace: {StackTrace}", context.Exception.StackTrace);
             return Task.CompletedTask;
         },
         OnChallenge = context =>
         {
+            var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>();
+            logger.LogWarning("=== JWT Challenge triggered ===");
+            logger.LogWarning("Request path: {Path}", context.Request.Path);
+            logger.LogWarning("Authorization header present: {HasAuth}", !string.IsNullOrEmpty(context.Request.Headers.Authorization));
+
             // Skip the challenge for requests without authorization header
             if (string.IsNullOrEmpty(context.Request.Headers.Authorization))
             {
+                logger.LogInformation("Skipping challenge - no authorization header");
                 context.HandleResponse();
             }
+            return Task.CompletedTask;
+        },
+        OnMessageReceived = context =>
+        {
+            var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>();
+            logger.LogInformation("=== JWT Message received ===");
+            logger.LogInformation("Request path: {Path}", context.Request.Path);
+            logger.LogInformation("Authorization header: {AuthHeader}", context.Request.Headers.Authorization);
             return Task.CompletedTask;
         }
     };
