@@ -93,6 +93,17 @@ export default async function AlumniMemberPage({ params }: MemberPageProps) {
 
           {/* Sidebar */}
           <div className="space-y-6">
+            {/* Member Image */}
+            {member.imageUrl && (
+              <div className="bg-white rounded-lg shadow-md p-6 flex flex-col items-center">
+                <img
+                  src={member.imageUrl}
+                  alt={member.name}
+                  className="w-40 h-40 object-cover rounded-full border-4 border-purple-300 shadow-md mb-2"
+                  loading="lazy"
+                />
+              </div>
+            )}
             {/* Quick Info */}
             <div className="bg-white rounded-lg shadow-md p-6">
               <h3 className="text-lg font-bold text-gray-800 mb-4">

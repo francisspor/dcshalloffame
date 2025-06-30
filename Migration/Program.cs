@@ -14,6 +14,8 @@ public class Program
             Console.WriteLine("  dotnet run -- UpdateNames     - Update all names to proper case");
             Console.WriteLine("  dotnet run -- MigrateToNewProject - Migrate data to new project (dcshalloffame)");
             Console.WriteLine("  dotnet run -- TestFirestore   - Test Firestore connection to target project");
+            Console.WriteLine("  dotnet run -- ExtractImages   - Extract image URLs from Google Sites");
+            Console.WriteLine("  dotnet run -- MapImages       - Map images from Google Sites to database");
             return;
         }
 
@@ -36,9 +38,17 @@ public class Program
             case "testfirestore":
                 await Migration.TestFirestoreConnection.RunAsync();
                 break;
+            case "extractimages":
+                var imageExtractor = new Migration.ExtractImageUrls();
+                await imageExtractor.RunAsync();
+                break;
+            case "mapimages":
+                var imageMapper = new Migration.ManualImageMapping();
+                await imageMapper.RunAsync();
+                break;
             default:
                 Console.WriteLine($"Unknown command: {command}");
-                Console.WriteLine("Available commands: TestScraping, ScrapeAndMigrate, UpdateNames, MigrateToNewProject, TestFirestore");
+                Console.WriteLine("Available commands: TestScraping, ScrapeAndMigrate, UpdateNames, MigrateToNewProject, TestFirestore, ExtractImages, MapImages");
                 break;
         }
     }

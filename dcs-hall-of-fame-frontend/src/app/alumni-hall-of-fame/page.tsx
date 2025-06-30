@@ -79,6 +79,16 @@ export default function AlumniHallOfFame() {
                     className="group"
                   >
                     <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-all duration-300 border-l-4 border-purple-500 group-hover:border-purple-600">
+                      {member.imageUrl && (
+                        <div className="flex justify-center mb-4">
+                          <img
+                            src={member.imageUrl}
+                            alt={member.name}
+                            className="w-20 h-20 object-cover rounded-full border-2 border-purple-300 shadow-sm"
+                            loading="lazy"
+                          />
+                        </div>
+                      )}
                       <h3 className="text-xl font-bold text-gray-800 mb-2 group-hover:text-purple-600 transition-colors">
                         {member.name}
                       </h3>
