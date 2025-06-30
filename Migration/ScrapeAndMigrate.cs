@@ -40,13 +40,12 @@ public class ScrapeAndMigrate
             foreach (var kvp in scrapedData)
             {
                 var name = kvp.Key;
-                var (biography, inductionYear, achievements) = kvp.Value;
+                var (biography, _, achievements) = kvp.Value;
 
                 var member = new HallOfFameMember
                 {
                     Name = name,
                     Category = DetermineCategory(name), // You'll need to implement this based on your lists
-                    InductionYear = inductionYear,
                     Biography = biography,
                     ImageUrl = "", // Will need to be updated manually
                     Achievements = achievements

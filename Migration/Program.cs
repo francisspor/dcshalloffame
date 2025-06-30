@@ -11,6 +11,9 @@ public class Program
             Console.WriteLine("Usage:");
             Console.WriteLine("  dotnet run -- TestScraping    - Test the scraping functionality");
             Console.WriteLine("  dotnet run -- ScrapeAndMigrate - Scrape and migrate data to database");
+            Console.WriteLine("  dotnet run -- UpdateNames     - Update all names to proper case");
+            Console.WriteLine("  dotnet run -- MigrateToNewProject - Migrate data to new project (dcshalloffame)");
+            Console.WriteLine("  dotnet run -- TestFirestore   - Test Firestore connection to target project");
             return;
         }
 
@@ -24,9 +27,18 @@ public class Program
             case "scrapeandmigrate":
                 await ScrapeAndMigrate.RunAsync();
                 break;
+            case "updatenames":
+                await Migration.UpdateNamesToProperCase.RunAsync();
+                break;
+            case "migratetonewproject":
+                await Migration.MigrateToNewProject.RunAsync();
+                break;
+            case "testfirestore":
+                await Migration.TestFirestoreConnection.RunAsync();
+                break;
             default:
                 Console.WriteLine($"Unknown command: {command}");
-                Console.WriteLine("Available commands: TestScraping, ScrapeAndMigrate");
+                Console.WriteLine("Available commands: TestScraping, ScrapeAndMigrate, UpdateNames, MigrateToNewProject, TestFirestore");
                 break;
         }
     }
