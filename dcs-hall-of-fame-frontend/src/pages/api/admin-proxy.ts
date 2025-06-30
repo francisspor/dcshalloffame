@@ -15,26 +15,18 @@ console.log('🔧 JWT_SECRET length:', JWT_SECRET?.length || 0)
 console.log('🔧 JWT_SECRET starts with:', JWT_SECRET?.substring(0, 10) + '...')
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  console.log('🔍 Admin proxy called:', req.method, req.query.endpoint)
-  console.log('🔍 Request headers:', Object.keys(req.headers))
-  console.log('🔍 Authorization header:', req.headers.authorization ? 'Present' : 'Missing')
-
   try {
     // Get session from NextAuth
-    console.log('🔍 Attempting to get session...')
     const session = await getServerSession(req, res, authOptions)
-    console.log('🔍 Session found:', !!session)
-    console.log('🔍 Session user:', session?.user?.email)
-    console.log('🔍 Session user role:', session?.user?.role)
-    console.log('🔍 Full session object:', JSON.stringify(session, null, 2))
 
     if (!session || !session.user?.email) {
-      console.log('❌ No session found or no user email')
-      console.log('❌ Session object:', session)
       return res.status(401).json({ error: 'Unauthorized: No session' })
     }
 
-    console.log('✅ Session validated, forwarding request...')
+    // Validate user has admin role
+    if (session.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Forbidden: Admin access required' })
+    }
 
     // Prepare the proxied request
     const { method, body } = req
@@ -46,10 +38,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (endpoint.startsWith('/')) endpoint = endpoint.slice(1)
 
     const url = `${API_BASE_URL}/${endpoint}`
-    console.log('🔍 Proxying to:', url)
-    console.log('🔍 Request method:', method)
-    console.log('🔍 Request body:', body)
-    console.log('🔍 User email:', session.user.email)
 
     // Forward the request with user info in headers
     const apiRes = await fetch(url, {
@@ -57,13 +45,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       headers: {
         'Content-Type': 'application/json',
         'X-User-Email': session.user.email,
-        'X-User-Role': 'admin',
+        'X-User-Role': session.user.role || 'admin',
       },
       body: method !== 'GET' && method !== 'HEAD' ? JSON.stringify(body) : undefined,
     })
-
-    console.log('🔍 API response status:', apiRes.status)
-    console.log('🔍 API response headers:', Object.fromEntries(apiRes.headers.entries()))
 
     // Forward status and body
     const contentType = apiRes.headers.get('content-type')
@@ -71,11 +56,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     if (contentType && contentType.includes('application/json')) {
       const data = await apiRes.json()
-      console.log('🔍 API response data:', JSON.stringify(data, null, 2))
       res.json(data)
     } else {
       const text = await apiRes.text()
-      console.log('🔍 API response text:', text)
       res.send(text)
     }
   } catch (error) {

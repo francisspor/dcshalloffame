@@ -1,7 +1,4 @@
 using DCSHallOfFameApi.Services;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,19 +16,9 @@ builder.Services.AddSingleton<IFirebaseService, FirebaseService>();
 // Configure cache service
 builder.Services.AddSingleton<ICacheService, CacheService>();
 
-// Configure JWT Authentication
-var jwtSettings = builder.Configuration.GetSection("JwtSettings");
-var secretKey = jwtSettings["SecretKey"] ?? throw new InvalidOperationException("JWT SecretKey is not configured");
-var key = Encoding.ASCII.GetBytes(secretKey);
-
-// Debug logging for JWT secret
-var logger = builder.Services.BuildServiceProvider().GetRequiredService<ILogger<Program>>();
-logger.LogInformation("=== JWT Configuration ===");
-logger.LogInformation("SecretKey length: {Length}", secretKey?.Length ?? 0);
-logger.LogInformation("SecretKey starts with: {Start}", secretKey?.Substring(0, Math.Min(10, secretKey?.Length ?? 0)) + "...");
-logger.LogInformation("Key length: {KeyLength}", key?.Length ?? 0);
-
-// Note: JWT authentication disabled - using custom header-based authentication
+// Configure Authentication with a default scheme
+builder.Services.AddAuthentication("Custom")
+    .AddScheme<CustomAuthenticationSchemeOptions, CustomAuthenticationHandler>("Custom", options => { });
 
 // Configure Authorization
 builder.Services.AddAuthorization(options =>
@@ -40,30 +27,6 @@ builder.Services.AddAuthorization(options =>
     {
         policy.RequireAuthenticatedUser()
               .RequireClaim("http://schemas.microsoft.com/ws/2008/06/identity/claims/role", "admin");
-
-        // Add debugging to the policy
-        policy.RequireAssertion(context =>
-        {
-            var logger = context.Resource as ILogger<Program>;
-
-            if (logger != null)
-            {
-                logger.LogInformation("Checking AdminOnly policy");
-                logger.LogInformation("User authenticated: {IsAuthenticated}", context.User.Identity?.IsAuthenticated);
-                logger.LogInformation("User name: {Name}", context.User.Identity?.Name);
-
-                var hasRoleClaim = context.User.HasClaim(c => c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role" && c.Value == "admin");
-                logger.LogInformation("Has role claim 'admin': {HasRole}", hasRoleClaim);
-
-                foreach (var claim in context.User.Claims)
-                {
-                    logger.LogInformation("Policy check - Claim: {Type} = {Value}", claim.Type, claim.Value);
-                }
-            }
-
-            return context.User.Identity?.IsAuthenticated == true &&
-                   context.User.HasClaim(c => c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role" && c.Value == "admin");
-        });
     });
 });
 
@@ -83,8 +46,8 @@ builder.Services.AddCors(options =>
             .WithOrigins(allowedOrigins)
             .AllowAnyMethod()
             .AllowAnyHeader()
-            .SetIsOriginAllowedToAllowWildcardSubdomains()
-            .WithExposedHeaders("Content-Disposition");
+            .WithExposedHeaders("Content-Disposition")
+            .SetIsOriginAllowedToAllowWildcardSubdomains();
     });
 });
 
@@ -107,7 +70,7 @@ app.Use(async (context, next) =>
         context.Response.Headers.Add("Access-Control-Allow-Origin", origin);
         context.Response.Headers.Add("Vary", "Origin");
         context.Response.Headers.Add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-        context.Response.Headers.Add("Access-Control-Allow-Headers", "Content-Type, Authorization");
+        context.Response.Headers.Add("Access-Control-Allow-Headers", "Content-Type, Authorization, X-User-Email, X-User-Role");
     }
 
     if (context.Request.Method == "OPTIONS")
@@ -120,35 +83,17 @@ app.Use(async (context, next) =>
 });
 
 app.UseCors("AllowFrontend");
-// app.UseAuthentication(); // Disabled - using custom authentication
-// app.UseAuthorization(); // Disabled - using custom authentication
+app.UseAuthentication(); // Enable authentication middleware
+app.UseAuthorization(); // Enable authorization for [AdminOnly] attributes
 app.UseHttpsRedirection();
 
-// Simple authentication middleware for admin requests
+// Add security headers
 app.Use(async (context, next) =>
 {
-    var userEmail = context.Request.Headers["X-User-Email"].ToString();
-    var userRole = context.Request.Headers["X-User-Role"].ToString();
-
-    if (!string.IsNullOrEmpty(userEmail) && userRole == "admin")
-    {
-        // Create a simple claims principal for admin users
-        var claims = new List<System.Security.Claims.Claim>
-        {
-            new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.Name, userEmail),
-            new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.Email, userEmail),
-            new System.Security.Claims.Claim("http://schemas.microsoft.com/ws/2008/06/identity/claims/role", "admin")
-        };
-
-        var identity = new System.Security.Claims.ClaimsIdentity(claims, "Custom");
-        context.User = new System.Security.Claims.ClaimsPrincipal(identity);
-
-        var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
-        logger.LogInformation("=== Custom Authentication ===");
-        logger.LogInformation("User authenticated: {User}", userEmail);
-        logger.LogInformation("Role: {Role}", userRole);
-    }
-
+    context.Response.Headers.Add("X-Content-Type-Options", "nosniff");
+    context.Response.Headers.Add("X-Frame-Options", "DENY");
+    context.Response.Headers.Add("X-XSS-Protection", "1; mode=block");
+    context.Response.Headers.Add("Referrer-Policy", "strict-origin-when-cross-origin");
     await next();
 });
 
