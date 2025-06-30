@@ -21,13 +21,8 @@ public class HallOfFameMember
     [FirestoreProperty("category")]
     public MemberCategory Category { get; set; }  // "Staff" or "Alumni"
 
-    [FirestoreProperty("inductionYear")]
-    public int InductionYear { get; set; }
-
-
     [FirestoreProperty("graduationYear")]
     public int? GraduationYear { get; set; }
-
 
     [FirestoreProperty("biography")]
     public string Biography { get; set; } = string.Empty;

@@ -7,7 +7,6 @@ export interface HallOfFameMember {
   id: string;
   name: string;
   category: MemberCategory;
-  inductionYear: number;
   graduationYear?: number;
   biography: string;
   imageUrl: string;

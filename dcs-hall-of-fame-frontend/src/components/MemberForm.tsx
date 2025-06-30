@@ -6,7 +6,6 @@ import { MemberCategory, HallOfFameMember } from '@/types/member'
 interface MemberFormData {
   name: string
   category: MemberCategory
-  inductionYear: number
   graduationYear: string
   biography: string
   imageUrl: string
@@ -37,7 +36,6 @@ export default function MemberForm({
   const [formData, setFormData] = useState<MemberFormData>({
     name: '',
     category: MemberCategory.Staff,
-    inductionYear: new Date().getFullYear(),
     graduationYear: '',
     biography: '',
     imageUrl: '',
@@ -50,7 +48,6 @@ export default function MemberForm({
       setFormData({
         name: initialData.name,
         category: initialData.category,
-        inductionYear: initialData.inductionYear,
         graduationYear: initialData.graduationYear?.toString() || '',
         biography: initialData.biography,
         imageUrl: initialData.imageUrl,
@@ -102,7 +99,6 @@ export default function MemberForm({
     const memberData: Omit<HallOfFameMember, 'id' | 'createdAt' | 'updatedAt'> = {
       name: formData.name.trim(),
       category: formData.category,
-      inductionYear: parseInt(formData.inductionYear.toString()),
       graduationYear: formData.graduationYear ? parseInt(formData.graduationYear) : undefined,
       biography: formData.biography.trim(),
       imageUrl: formData.imageUrl.trim(),
@@ -162,41 +158,22 @@ export default function MemberForm({
           </div>
         </div>
 
-        {/* Years */}
-        <div className="grid md:grid-cols-2 gap-6">
-          <div>
-            <label htmlFor="inductionYear" className="block text-sm font-medium text-gray-700 mb-2">
-              Induction Year *
-            </label>
-            <input
-              type="number"
-              id="inductionYear"
-              name="inductionYear"
-              value={formData.inductionYear}
-              onChange={handleInputChange}
-              required
-              min="1900"
-              max={new Date().getFullYear() + 1}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
-            />
-          </div>
-
-          <div>
-            <label htmlFor="graduationYear" className="block text-sm font-medium text-gray-700 mb-2">
-              Graduation Year
-            </label>
-            <input
-              type="number"
-              id="graduationYear"
-              name="graduationYear"
-              value={formData.graduationYear}
-              onChange={handleInputChange}
-              min="1900"
-              max={new Date().getFullYear() + 1}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500"
-              placeholder="Leave empty for staff members"
-            />
-          </div>
+        {/* Graduation Year */}
+        <div>
+          <label htmlFor="graduationYear" className="block text-sm font-medium text-gray-700 mb-2">
+            Graduation Year
+          </label>
+          <input
+            type="number"
+            id="graduationYear"
+            name="graduationYear"
+            value={formData.graduationYear}
+            onChange={handleInputChange}
+            min="1900"
+            max={new Date().getFullYear() + 1}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500"
+            placeholder="Leave empty for staff members"
+          />
         </div>
 
         {/* Image URL */}

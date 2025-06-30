@@ -52,7 +52,6 @@ public class TestController : ControllerBase
             {
                 Name = "Test Member",
                 Category = MemberCategory.Staff,
-                InductionYear = DateTime.Now.Year,
                 Biography = "This is a test member created to verify Firebase connectivity",
                 ImageUrl = "https://example.com/test.jpg",
                 Achievements = new List<string> { "Test Achievement" }

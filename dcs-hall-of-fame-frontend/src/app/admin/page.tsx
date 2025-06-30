@@ -146,8 +146,7 @@ export default function AdminDashboard() {
                           <div>
                             <div className="font-medium text-gray-900">{member.name}</div>
                             <div className="text-sm text-gray-500">
-                              {member.category === MemberCategory.Staff ? 'Staff' : 'Alumni'} •
-                              Inducted {member.inductionYear}
+                              {member.category === MemberCategory.Staff ? 'Staff' : 'Alumni'}
                             </div>
                           </div>
                           <div className="flex space-x-2">

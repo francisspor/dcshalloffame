@@ -28,7 +28,6 @@ Content-Type: application/json
 {
     "name": "John Doe",
     "category": "Staff",
-    "inductionYear": 2024,
     "biography": "A distinguished teacher who served for 30 years.",
     "imageUrl": "https://example.com/john-doe.jpg",
     "achievements": [
@@ -44,7 +43,6 @@ Content-Type: application/json
 {
     "name": "Jane Smith",
     "category": "Alumni",
-    "inductionYear": 2024,
     "graduationYear": 1995,
     "biography": "Successful entrepreneur and community leader.",
     "imageUrl": "https://example.com/jane-smith.jpg",
@@ -61,7 +59,6 @@ Content-Type: application/json
 {
     "name": "John Doe",
     "category": "Staff",
-    "inductionYear": 2024,
     "biography": "Updated biography with more details.",
     "imageUrl": "https://example.com/john-doe.jpg",
     "achievements": [

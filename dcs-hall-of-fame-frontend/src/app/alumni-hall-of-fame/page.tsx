@@ -83,13 +83,10 @@ export default function AlumniHallOfFame() {
                         {member.name}
                       </h3>
                       {member.graduationYear && (
-                        <p className="text-gray-600 mb-1">
+                        <p className="text-gray-600 mb-2">
                           Class of {member.graduationYear}
                         </p>
                       )}
-                      <p className="text-sm text-gray-500 mb-3">
-                        Inducted {member.inductionYear}
-                      </p>
                       {member.achievements.length > 0 && (
                         <p className="text-sm text-gray-600 mb-3">
                           {member.achievements[0]}
@@ -113,7 +110,7 @@ export default function AlumniHallOfFame() {
               <h3 className="text-2xl font-bold text-gray-800 mb-6 text-center">
                 Alumni Hall of Fame Statistics
               </h3>
-              <div className="grid md:grid-cols-4 gap-8 text-center">
+              <div className="grid md:grid-cols-2 gap-8 text-center">
                 <div>
                   <div className="text-4xl font-bold text-purple-600 mb-2">{alumniMembers.length}</div>
                   <div className="text-gray-600">Inducted Alumni</div>
@@ -126,18 +123,6 @@ export default function AlumniHallOfFame() {
                     }
                   </div>
                   <div className="text-gray-600">Graduation Years</div>
-                </div>
-                <div>
-                  <div className="text-4xl font-bold text-purple-600 mb-2">
-                    {Math.round(alumniMembers.reduce((acc, member) => acc + (new Date().getFullYear() - member.inductionYear), 0) / alumniMembers.length)}
-                  </div>
-                  <div className="text-gray-600">Average Years Since Induction</div>
-                </div>
-                <div>
-                  <div className="text-4xl font-bold text-purple-600 mb-2">
-                    {Math.min(...alumniMembers.map(m => m.inductionYear))} - {Math.max(...alumniMembers.map(m => m.inductionYear))}
-                  </div>
-                  <div className="text-gray-600">Induction Period</div>
                 </div>
               </div>
             </div>

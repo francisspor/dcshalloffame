@@ -14,7 +14,7 @@ interface MemberTableProps {
 
 export default function MemberTable({ members, category, loading, error }: MemberTableProps) {
   const [searchTerm, setSearchTerm] = useState('')
-  const [sortBy, setSortBy] = useState<'name' | 'inductionYear' | 'graduationYear'>('name')
+  const [sortBy, setSortBy] = useState<'name' | 'graduationYear'>('name')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
 
   const filteredAndSortedMembers = useMemo(() => {
@@ -35,10 +35,6 @@ export default function MemberTable({ members, category, loading, error }: Membe
         case 'name':
           aValue = a.name
           bValue = b.name
-          break
-        case 'inductionYear':
-          aValue = a.inductionYear
-          bValue = b.inductionYear
           break
         case 'graduationYear':
           aValue = a.graduationYear || 0
@@ -63,7 +59,7 @@ export default function MemberTable({ members, category, loading, error }: Membe
     return filtered
   }, [members, searchTerm, sortBy, sortOrder])
 
-  const handleSort = (field: 'name' | 'inductionYear' | 'graduationYear') => {
+  const handleSort = (field: 'name' | 'graduationYear') => {
     if (sortBy === field) {
       setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')
     } else {
@@ -72,7 +68,7 @@ export default function MemberTable({ members, category, loading, error }: Membe
     }
   }
 
-  const getSortIcon = (field: 'name' | 'inductionYear' | 'graduationYear') => {
+  const getSortIcon = (field: 'name' | 'graduationYear') => {
     if (sortBy !== field) return null
 
     return sortOrder === 'asc' ? '↑' : '↓'
@@ -124,15 +120,13 @@ export default function MemberTable({ members, category, loading, error }: Membe
             value={`${sortBy}-${sortOrder}`}
             onChange={(e) => {
               const [field, order] = e.target.value.split('-') as [string, 'asc' | 'desc']
-              setSortBy(field as 'name' | 'inductionYear' | 'graduationYear')
+              setSortBy(field as 'name' | 'graduationYear')
               setSortOrder(order)
             }}
             className="border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-500"
           >
             <option value="name-asc">Name A-Z</option>
             <option value="name-desc">Name Z-A</option>
-            <option value="inductionYear-asc">Induction Year (Oldest)</option>
-            <option value="inductionYear-desc">Induction Year (Newest)</option>
             {category === MemberCategory.Alumni && (
               <>
                 <option value="graduationYear-asc">Graduation Year (Oldest)</option>
@@ -163,15 +157,6 @@ export default function MemberTable({ members, category, loading, error }: Membe
                   <span className="text-gray-400">{getSortIcon('name')}</span>
                 </div>
               </th>
-              <th
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                onClick={() => handleSort('inductionYear')}
-              >
-                <div className="flex items-center space-x-1">
-                  <span>Induction Year</span>
-                  <span className="text-gray-400">{getSortIcon('inductionYear')}</span>
-                </div>
-              </th>
               {category === MemberCategory.Alumni && (
                 <th
                   className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
@@ -191,7 +176,7 @@ export default function MemberTable({ members, category, loading, error }: Membe
           <tbody className="bg-white divide-y divide-gray-200">
             {filteredAndSortedMembers.length === 0 ? (
               <tr>
-                <td colSpan={category === MemberCategory.Alumni ? 4 : 3} className="px-6 py-12 text-center text-gray-500">
+                <td colSpan={category === MemberCategory.Alumni ? 3 : 2} className="px-6 py-12 text-center text-gray-500">
                   {searchTerm ? 'No members found matching your search.' : 'No members found.'}
                 </td>
               </tr>
@@ -205,9 +190,6 @@ export default function MemberTable({ members, category, loading, error }: Membe
                         {member.biography.substring(0, 100)}...
                       </div>
                     )}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {member.inductionYear}
                   </td>
                   {category === MemberCategory.Alumni && (
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">

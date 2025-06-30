@@ -51,8 +51,7 @@ export default async function AlumniMemberPage({ params }: MemberPageProps) {
               {member.name}
             </h1>
             <p className="text-xl mt-2">
-              {member.graduationYear && `Class of ${member.graduationYear} • `}
-              Inducted {member.inductionYear}
+              {member.graduationYear && `Class of ${member.graduationYear}`}
             </p>
           </div>
         </div>
@@ -109,14 +108,6 @@ export default async function AlumniMemberPage({ params }: MemberPageProps) {
                 <div>
                   <span className="text-gray-500 text-sm">Category:</span>
                   <p className="font-medium">Alumni</p>
-                </div>
-                <div>
-                  <span className="text-gray-500 text-sm">Induction Year:</span>
-                  <p className="font-medium">{member.inductionYear}</p>
-                </div>
-                <div>
-                  <span className="text-gray-500 text-sm">Years Since Induction:</span>
-                  <p className="font-medium">{new Date().getFullYear() - member.inductionYear} years</p>
                 </div>
               </div>
             </div>

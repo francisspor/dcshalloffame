@@ -91,9 +91,6 @@ export default function StaffHallOfFame() {
                           Class of {member.graduationYear}
                         </p>
                       )}
-                      <p className="text-sm text-gray-500 mb-3">
-                        Inducted {member.inductionYear}
-                      </p>
                       {member.achievements.length > 0 && (
                         <p className="text-sm text-gray-600 mb-3">
                           {member.achievements[0]}
@@ -117,22 +114,10 @@ export default function StaffHallOfFame() {
               <h3 className="text-2xl font-bold text-gray-800 mb-6 text-center">
                 Staff Hall of Fame Statistics
               </h3>
-              <div className="grid md:grid-cols-3 gap-8 text-center">
+              <div className="grid md:grid-cols-1 gap-8 text-center">
                 <div>
                   <div className="text-4xl font-bold text-green-600 mb-2">{staffMembers.length}</div>
                   <div className="text-gray-600">Inducted Members</div>
-                </div>
-                <div>
-                  <div className="text-4xl font-bold text-green-600 mb-2">
-                    {Math.round(staffMembers.reduce((acc, member) => acc + (new Date().getFullYear() - member.inductionYear), 0) / staffMembers.length)}
-                  </div>
-                  <div className="text-gray-600">Average Years Since Induction</div>
-                </div>
-                <div>
-                  <div className="text-4xl font-bold text-green-600 mb-2">
-                    {Math.min(...staffMembers.map(m => m.inductionYear))} - {Math.max(...staffMembers.map(m => m.inductionYear))}
-                  </div>
-                  <div className="text-gray-600">Induction Period</div>
                 </div>
               </div>
             </div>
