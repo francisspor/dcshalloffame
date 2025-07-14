@@ -75,14 +75,16 @@ export const authOptions: NextAuthOptions = {
       return false // User is not in the group, deny sign in
     },
     jwt: async ({ token, user }) => {
+      // If this is a new sign in, assign the admin role
       if (user) {
-        token.role = user.role;
+        token.role = 'admin';
       }
       return token;
     },
     session: async ({ session, token }) => {
+      // Pass the role from the token to the session
       if (token && session.user) {
-        session.user.role = token.role;
+        session.user.role = token.role as string;
       }
       return session;
     }

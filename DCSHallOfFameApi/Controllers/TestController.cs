@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Mvc;
 using DCSHallOfFameApi.Services;
 using DCSHallOfFameApi.Models;
 using Microsoft.AspNetCore.Cors;
+using System.Security.Claims;
+using DCSHallOfFameApi.Attributes;
 
 namespace DCSHallOfFameApi.Controllers;
 
@@ -43,7 +45,23 @@ public class TestController : ControllerBase
         }
     }
 
+    [HttpGet("auth")]
+    public IActionResult TestAuth()
+    {
+        var user = User;
+        var isAuthenticated = user.Identity?.IsAuthenticated ?? false;
+        var claims = user.Claims.Select(c => new { Type = c.Type, Value = c.Value }).ToList();
+
+        return Ok(new {
+            isAuthenticated,
+            userName = user.Identity?.Name,
+            claims,
+            headers = Request.Headers.ToDictionary(h => h.Key, h => h.Value.ToString())
+        });
+    }
+
     [HttpPost("test-member")]
+    [AdminOnly]
     public async Task<IActionResult> CreateTestMember()
     {
         try
